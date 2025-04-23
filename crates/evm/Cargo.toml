@@ -27,6 +27,8 @@ revm.workspace = true
 revm-database.workspace = true
 op-revm = { workspace = true, optional = true }
 
+reth-tracing.workspace = true
+
 # alloy
 alloy-primitives.workspace = true
 alloy-eips.workspace = true

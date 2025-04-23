@@ -30,6 +30,8 @@ use revm::{
 };
 use revm_database::{states::bundle_state::BundleRetention, BundleState, State};
 
+use reth_tracing::tracing::info;
+
 /// A type that knows how to execute a block. It is assumed to operate on a
 /// [`crate::Evm`] internally and use [`State`] as database.
 pub trait Executor<DB: Database>: Sized {
@@ -529,6 +531,61 @@ where
         })?;
 
         let block = RecoveredBlock::new_unhashed(block, senders);
+        
+        info!(target: "reth::cli", "okx crates/evm/src/execute.rs 538 block {:#?}", &block); // has tx with senders
+        info!(target: "reth::cli", "okx crates/evm/src/execute.rs 539 result {:#?}", &result); // has tx results
+
+        let txes   = block.clone_transactions_recovered().zip(result.receipts.iter());
+        for tx in txes {
+            let tx_with_sender = tx.0;
+            let tx_receipt = tx.1;
+
+            /*
+                tx_with_sender
+
+                Recovered {
+                    signer: 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266,
+                    tx: TransactionSigned {
+                        hash: OnceLock(
+                            0x49e8c58906ad009ef04571378a9fadff3405ea1fc15a90cc1fa020e76caa1faa,
+                        ),
+                        signature: PrimitiveSignature {
+                            y_parity: true,
+                            r: 84480544170562363740712157094453625170361370229720168376645359393315534711100,
+                            s: 45528095545498740318281645599826049509258448974527829084463442195130972971884,
+                        },
+                        transaction: Legacy(
+                            TxLegacy {
+                                chain_id: Some(
+                                    1337,
+                                ),
+                                nonce: 0,
+                                gas_price: 1000000000,
+                                gas_limit: 21000,
+                                to: Call(
+                                    0x70997970c51812dc3a010c7d01b50e0d17dc79c8,
+                                ),
+                                value: 0,
+                                input: 0x,
+                            },
+                        ),
+                    },
+                }
+            */
+
+            /*
+                tx_receipt has cumulative_gas_used, this can be used to track gas used for each tx
+
+                Receipt {
+                    tx_type: Legacy,
+                    success: true,
+                    cumulative_gas_used: 21000,
+                    logs: [],
+                }
+            */
+            
+            info!(target: "reth::cli", "okx crates/evm/src/execute.rs 543 tx {:#?} {:#?}", &tx_with_sender, &tx_receipt);
+        }
 
         Ok(BlockBuilderOutcome { execution_result: result, hashed_state, trie_updates, block })
     }

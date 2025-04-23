@@ -1,1 +1,1 @@
-rm -rf /Users/donavernang/Library/Application Support/reth
+rm -rf /Users/donavernang/Library/Application\ Support/reth/
